@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Student Management System</title>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+	integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+	crossorigin="anonymous">
+</head>
+<body ng-app="myApp" ng-controller="appController">
+	<center ng-show="isRoutineVisible">
+	<table border="2" class="table bg-dark">
+		<tr ng-repeat="rout in routine" scope="row">
+			<td>{{rout.batchName}}</td>
+			<td>{{rout.courseName}}</td>
+			<td>{{rout.teacherName}}</td>
+			<td>{{rout.days}}</td>
+			<td>{{rout.period}}</td>
+			<td>{{rout.roomName}}</td>
+		</tr>
+	</table>
+	</center>
+	
+	
+	<div class="container">
+		<div class="row">
+			<div class="col-md-9">
+			<div class="alert alert-primary bg-danger text-light" role="alert" id="alertMsg">
+
+</div>
+			</div>
+			<div class="col-md-3">
+			<div class="col-md-3" ng-show="isVisibleRoutineButton">
+				<a href="" class="btn btn-danger"
+					ng-click="generateRoutine()">GENERATE ROUTINE</a>
+			</div>
+			</div>
+		</div>
+	</div>
+
+	
+	
+	<div class="container mt-5">
+	
+		<div class="row">
+			<div class="col-md-3">
+				<select class="form-control" ng-model="sendRoutine.batchName"
+					ng-click="showSelectedBatch(sendRoutine.batchName)">
+					<option value="">Select Batch</option>
+					<option ng-repeat="bat in batch" value="{{bat.names}}">{{bat.names}}</option>
+				</select>
+			</div>
+			<div class="col-md-3" ng-show="isVisibleCourse">
+				<select class="form-control" ng-model="sendRoutine.courseName">
+					<option value="">Select Course</option>
+					<option ng-repeat="cou in course" value="{{cou.names}}">{{cou.names}}</option>
+				</select>
+			</div>
+			<div class="col-md-3" ng-show="isVisibleTeacher">
+				<select class="form-control" ng-model="sendRoutine.teacherName"
+					ng-click="showSelectedTeacher(sendRoutine.teacher)">
+					<option value="">Select Teacher</option>
+					<option ng-repeat="tea in teacher" value="{{tea.names}}">{{tea.names}}</option>
+				</select>
+			</div>
+			<div class="col-md-3">
+				
+			</div>
+		</div>
+		<!------------------------------------------>
+		<br>
+		<hr />
+		<div class="row">
+			<div class="col-md-3" ng-show="isVisiblePeriod">
+				
+			</div>
+			<div class="col-md-3" ng-show="isVisibleRoom">
+				
+			</div>
+			<div class="col-md-3" ng-show="isVisibleButton">
+				<a href="" class="btn btn-danger"
+					ng-click="submitRoutine(sendRoutine)">SUBMIT</a>
+			</div>
+			<div class="col-md-3"></div>
+		</div>
+	</div>
+	</div>
+	
+	</div>
+
+
+			
+
+
+	<script type="text/javascript">
+		var app = angular.module("myApp", []);
+		app.controller("appController",function($scope, $http) {
+							
+							var msg = document.getElementById("alertMsg");
+	                        msg.innerHTML = " Choose Batch From Selection";
+	                        $scope.isRoutineVisible = false;
+							$scope.isVisibleCourse = false;
+							$scope.isVisibleTeacher = false;
+							 $scope.isVisibleButton = false;
+							 $scope.isVisibleRoutineButton = true;
+							$scope.roomNumber = 0;
+							$scope.period = [];
+							 $scope.classBookOnDay = [];
+							$scope.sendRoutine = {
+								id : "",
+								batchName : "",
+								courseName : "",
+								teacherName : "",
+								days : "",
+								period : "",
+								roomName : ""
+							};
+
+							$scope.batch = [];
+							refreshBatchData();
+							function refreshBatchData() {
+								$http({
+									method : 'GET',
+									url : 'http://localhost:8080/allBatch'
+								}).then(function(response) {
+									$scope.batch = response.data;
+								});
+							}
+
+							//----------------------------------------------
+
+							$scope.course = [];
+							refreshCourseData();
+							function refreshCourseData() {
+								$http({
+									method : 'GET',
+									url : 'http://localhost:8080/allCourse'
+								}).then(function(response) {
+									$scope.course = response.data;
+								});
+							}
+
+							//----------------------------------------------
+
+							$scope.teacher = [];
+							refreshTeacherData();
+							function refreshTeacherData() {
+								$http({
+									method : 'GET',
+									url : 'http://localhost:8080/allTeacher'
+								}).then(function(response) {
+									$scope.teacher = response.data;
+								});
+							}
+
+							//---------------------------------------
+							$scope.week = [];
+							refreshWeekData();
+							function refreshWeekData() {
+								$http({
+									method : 'GET',
+									url : 'http://localhost:8080/allWeek'
+								}).then(function(response) {
+									$scope.week = response.data;
+								});
+							}
+							var z = "";
+							z = $scope.week.length;
+							console.log("------turag week-------" + z);
+							//--------------------------------------
+							$scope.period = [];
+
+							refreshTimesData();
+							function refreshTimesData() {
+								$http({
+									method : 'GET',
+									url : 'http://localhost:8080/allPeriod'
+								}).then(function(response) {
+									$scope.period = response.data;
+								});
+							}
+							console.log("------turag-------"
+									+ $scope.period.length);
+							//---------------------------------------
+							$scope.rooms = [];
+							refreshRoomData();
+							function refreshRoomData() {
+								$http({
+									method : 'GET',
+									url : 'http://localhost:8080/allRoom'
+								}).then(function(response) {
+									$scope.rooms = response.data;
+								});
+							}
+
+							//---------------------------------------------
+
+							$scope.routine = [];
+							refreshRoutineData();
+							function refreshRoutineData() {
+								$http({
+									method : 'GET',
+									url : 'http://localhost:8080/allRoutine'
+								}).then(function(response) {
+									$scope.routine = response.data;
+								});
+							}
+							//------------------------------------------------
+							
+							$scope.saturDay =[];
+							$scope.sunDay =[];
+							$scope.monDay =[];
+							$scope.tuesDay =[];
+							$scope.wednesDay =[];
+							$scope.thursDay =[];
+							$scope.friday =[];
+							$scope.generateRoutine = function(){
+								if($scope.isRoutineVisible){
+									$scope.isRoutineVisible = false;
+								}else{
+									$scope.isRoutineVisible = true;
+								}
+								
+// 								 for (var i = 0; i < $scope.week.length; i++) {
+// 	                                   for(var j = 0; j < $scope.routine.length; j++){
+// 	                                	   if($scope.routine[j].days === "Saturday"){
+// 	                                		   $scope.saturDay.push($scope.routine[j]);
+// 	                                	   }else if($scope.routine[j].days === "Sunday"){
+// 	                                		   $scope.sunDay.push($scope.routine[j]);
+// 	                                	   }else if($scope.routine[j].days === "Monday"){
+// 	                                		   $scope.monDay.push($scope.routine[j]);
+// 	                                	   }else if($scope.routine[j].days === "Tuesday"){
+// 	                                		   $scope.tuesDay.push($scope.routine[j]);
+// 	                                	   }else if($scope.routine[j].days === "Wednesday"){
+// 	                                		   $scope.wednesDay.push($scope.routine[j]);
+// 	                                	   }else if($scope.routine[j].days === "Thursday"){
+// 	                                		   $scope.thursDay.push($scope.routine[j]);
+// 	                                	   }else if($scope.routine[j].days === "Friday"){
+// 	                                		   $scope.friday.push($scope.routine[j]);
+// 	                                	   }
+// 	                                   }
+// 								}
+								 console.log($scope.saturDay);
+							}
+							
+							
+							removeFullBookedDate();
+							function removeFullBookedDate(){
+								$scope.dayCounter = 0;
+                               
+                                for (var i = 0; i < $scope.week.length; i++) {
+                                    for (var j = 0; j < $scope.routine.length; j++) {
+                                        if ($scope.routine[j].days === $scope.week[i].day) {
+                                            $scope.removablePeriod.push($scope.routine[j].period);
+                                            $scope.dayCounter++;
+                                        }
+                                    }
+                                    $scope.classBookOnDay.push($scope.dayCounter);
+                                    $scope.dayCounter = 0;
+                                }
+                                console.log($scope.classBookOnDay);
+                                $scope.removableDay = [];
+                                //------------------------
+                                // removing all day those are booked for 3 period
+                                for (var i = 0; i < $scope.removableDay.length; i++) {
+                                    for (var j = 0; j < $scope.week.length; j++) {
+                                        if ($scope.week[j].day === $scope.removableDay[i]) {
+                                             $scope.week.splice($scope.week.indexOf($scope.week[j]), 1);
+                                        }
+                                    }
+                                }
+                                console.log("new week length "+ $scope.week.length);
+// remaining day after remove
+
+                                console.log("Remaining Week now =========");
+                                for (var i = 0; i < $scope.week.length; i++) {
+                                    console.log($scope.week[i].days);
+                                }
+                                
+							}
+							
+							
+							$scope.showSelectedBatch = function(batchSelected) {
+								console.log(batchSelected);
+								$scope.count = 0;
+								$scope.removableItem = "";
+								$scope.removableItemDays = "";
+								for (var i = 0; i < $scope.routine.length; i++) {
+									if ($scope.routine[i].batchName === batchSelected) {
+										$scope.count++;
+									}
+								}
+								// console.log("count " + $scope.count);
+								// refreshCourseData();
+								if ($scope.count <= 1) {
+									//console.log("can assign ");
+									 msg.innerHTML = "You can Assign Course";
+									for (var i = 0; i < $scope.routine.length; i++) {
+										if ($scope.routine[i].batchName === batchSelected) {
+											$scope.removableItem = $scope.routine[i].courseName;
+											$scope.removableItemDays = $scope.routine[i].days;
+											// console.log("Course need to remove " +  $scope.removableItem);
+											// console.log("matched?  " +  ($scope.course[i].names === $scope.removableItem));
+											//console.log("Days need to remove " +  $scope.removableItemDays);
+											for (var i = 0; i < $scope.course.length; i++) {
+												console
+														.log(" "
+																+ $scope.course[i].names);
+												if ($scope.course[i].names === $scope.removableItem) {
+													// console.log("item matche on course array");
+													$scope.course
+															.splice(
+																	$scope.course
+																			.indexOf($scope.course[i]),
+																	1);
+													//console.log("Item removed");
+													//$scope.removableItem = "";
+												}
+											}
+											//---------------------------
+											for (var i = 0; i < $scope.week.length; i++) {
+												console.log(" "
+														+ $scope.week[i].day);
+												if ($scope.week[i].day === $scope.removableItemDays) {
+
+													$scope.week
+															.splice(
+																	$scope.week
+																			.indexOf($scope.week[i]),
+																	1);
+													// console.log("Item ----------week ------removed");
+													//$scope.removableItem = "";
+												}
+											}
+											//---------------------
+
+											// console.log("Course Size After Remove " + $scope.course.length);
+											for (var i = 0; i < $scope.course.length; i++) {
+												console
+														.log(" "
+																+ $scope.course[i].names);
+											}
+										} else {
+// 											refreshCourseData();
+// 											refreshWeekData();
+											// console.log("Item not found");
+										}
+									}
+									$scope.isVisibleCourse = true;
+									$scope.isVisibleTeacher = true;
+									$scope.isVisibleDays = true;
+
+								} else if ($scope.count >1) {
+									refreshCourseData();
+									 msg.innerHTML = "This batch has already given two course";
+									$scope.isVisibleCourse = false;
+									$scope.isVisibleTeacher = false;
+									$scope.isVisibleDays = false;
+
+
+								}
+
+							}
+
+							//-----------------------------------------
+	                        $scope.showSelectedTeacher = function (selectedTeacher) {
+	                            console.log(selectedTeacher);
+	                            
+	                            $scope.isVisibleButton = true;
+	                            $scope.availablePeriod = [];
+	                            $scope.removablePeriod = [];
+	                            $scope.removablePeriod2 = [];
+	                            
+	                            console.log("1. Selected Batch " + $scope.sendRoutine.batch);
+	                            console.log("2. Selected Course " + $scope.sendRoutine.course);
+	                            console.log("3. Selected Batch " + $scope.sendRoutine.teacher);
+	                            $scope.removableTeacherPeriod = "";
+	                            $scope.removableTeacherDays = "";
+	                            $scope.teacherClassCount = 0;
+	                            
+	                            // checking if the teacher has class more than 7 days
+	                            for (var i = 0; i < $scope.routine.length; i++) {
+	                                if ($scope.routine[i].teacherName === selectedTeacher) {
+	                                    $scope.teacherClassCount++;
+	                                }
+	                            }
+	                            console.log(selectedTeacher + " has " + $scope.teacherClassCount + " class in this week");
+	                            if ($scope.teacherClassCount > 6) {
+	                                msg.innerHTML = "This teacher has no free schedule on this week";
+	                            } else {
+	                                msg.innerHTML = "Generating New Slot on Routine Table";
+	                                console.log("Generating New Slot on Routine Table");
+
+	                                $scope.removableDay = [];
+	                                for (var i = 0; i < $scope.week.length; i++) {
+	                                    console.log($scope.week[i].days + " has " + $scope.classBookOnDay[i] + " period booked");
+	                                    if ($scope.classBookOnDay[i] === 3) { 
+	                                        $scope.removableDay.push($scope.week[i].days);
+	                                    }
+	                                }
+	                                console.log("these day Should splice" + $scope.removableDay);
+
+
+	                                console.log("Remaining Week now =========");
+	                                for (var i = 0; i < $scope.week.length; i++) {
+	                                    console.log($scope.week[i].day);
+	                                }
+	                                
+	                                console.log("dewa jave ei dine " + $scope.week[0].day);
+	                               
+	                                $scope.bookedPrd =[];
+	                                for (var i = 0; i < $scope.routine.length; i++) {
+	                                        if ($scope.routine[i].days === $scope.week[0].day) {
+	                                            $scope.bookedPrd.push($scope.routine[i].period);
+	                                        }
+	                                    
+	                                }
+	                                console.log($scope.week[0].day +" is booked in "+ $scope.bookedPrd);
+	                                
+	                            }
+	                            
+	                            $scope.assignablePeriod = [];
+	                            console.log("$$$$$$$ "+$scope.bookedPrd.length);
+	                            for (var i = 0; i < $scope.bookedPrd.length; i++) {
+	                               
+	                                for (var j = 0; j < $scope.period.length; j++) {
+	                                    if ($scope.period[j].period === $scope.bookedPrd[i]) {
+	                                        $scope.period.splice($scope.period.indexOf($scope.period[j].period), 1);
+	                                    }
+	                                }
+	                                
+	                            }
+ 	                            console.log("finally dewa jabe ei period e "+ $scope.period[0].period);
+	                            
+ 	                            $scope.sendRoutine.days = $scope.week[0].day;
+ 	                            $scope.sendRoutine.period = $scope.period[0].period;
+	                            console.log("1. --------------"+$scope.week[0].day);
+	                            console.log("1. --------------"+$scope.period[0].period);
+	                            console.log("assign joggo period "+$scope.period[0].period);
+	                            
+	                            for(var i=0; i<$scope.week.length;i++){
+	                            	if($scope.period[i].period === 'Morning'){
+	  	                        	  $scope.sendRoutine.roomName ="201";
+	  	                          }else if($scope.period[i].period === 'Evening'){
+	  	                        	  $scope.sendRoutine.roomName ="202";
+	  	                          }else if($scope.period[i].period === 'Night'){
+	  	                        	  $scope.sendRoutine.roomName ="203";
+	  	                          }
+	                            }
+	                          
+									
+	                          $scope.isVivibleButton = true;
+	                          
+	                        }
+						
+
+
+
+							$scope.submitRoutine = function(sendARoutine) {
+								var method = "";
+								var url = "";
+								method = "POST";
+								url = '/routineSave';
+								$http({
+									method : method,
+									url : url,
+									data : angular.toJson($scope.sendRoutine),
+									headers : {
+										'Content-Type' : 'application/json'
+									}
+								}).then(success, error);
+							}
+
+							
+							
+							function success(response) {
+								refreshBatchData();
+								refreshCourseData();
+								refreshTeacherData();
+								refreshWeekData();
+								refreshTimesData();
+								refreshRoomData();
+								 $scope.isVisibleRoutineButton = true;
+							}
+							function error(response) {
+
+							}
+
+						});
+	</script>
+</body>
+</html>
